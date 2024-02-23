@@ -1,4 +1,4 @@
-add db_dump.sql to postgres filder
+add db_dump.sql to postgres folder
 
 docker compose up --build
 
