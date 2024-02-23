@@ -332,3 +332,4 @@ timekeepers_api/media/
 myapp_models.png
 
 .idea/
+.vscode/
