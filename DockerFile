@@ -1,0 +1,24 @@
+FROM python:3.12
+
+WORKDIR /usr/src/test_project
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update \
+    && apt-get install -y libpq-dev gcc python3-dev musl-dev libjpeg-dev zlib1g-dev \
+    git supervisor ffmpeg curl libffi-dev nano
+
+# install poetry
+RUN curl -sSL https://install.python-poetry.org | python -
+RUN export PATH="/root/.local/bin:$PATH"
+
+COPY ./test_project/poetry.lock /usr/src/test_project//poetry.lock
+COPY ./test_project/pyproject.toml /usr/src/test_project//pyproject.toml
+
+RUN ln -s ~/.local/bin/poetry /usr/bin/poetry
+RUN poetry install
+
+COPY . /usr/src/test_project/
+
+EXPOSE 80

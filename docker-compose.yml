@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+
+  db:
+    build: ./postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testprojectapi
+      - POSTGRES_DB=testprojectapi
+    ports:
+      - "5432:5432"
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog_testproject
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: on-failure
+
+volumes:
+  postgres_data:

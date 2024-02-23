@@ -1,0 +1,8 @@
+
+Create Dump:
+
+docker exec -t --user postgres test_project_api_db_1 pg_dumpall -c -U postgres > db_dump.sql
+
+Restore Dump:
+
+cat db_dump.sql | docker exec -i --user postgres test_project_api_db_1 psql -U postgres
