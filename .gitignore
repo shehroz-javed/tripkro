@@ -330,3 +330,5 @@ timekeepers_api/media/
 .pytest_cache/
 
 myapp_models.png
+
+.idea/
