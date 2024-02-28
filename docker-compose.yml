@@ -4,18 +4,19 @@ services:
 
   db:
     build: ./postgres
+    container_name: db_tripkaro
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=testprojectapi
-      - POSTGRES_DB=testprojectapi
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
     ports:
       - "5432:5432"
 
   mailhog:
     image: mailhog/mailhog
-    container_name: mailhog_testproject
+    container_name: mailhog_tripkaro
     ports:
       - "1025:1025"
       - "8025:8025"

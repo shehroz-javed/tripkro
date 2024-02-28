@@ -13,12 +13,12 @@ RUN apt-get update \
 RUN curl -sSL https://install.python-poetry.org | python -
 RUN export PATH="/root/.local/bin:$PATH"
 
-COPY ./test_project/poetry.lock /usr/src/test_project//poetry.lock
-COPY ./test_project/pyproject.toml /usr/src/test_project//pyproject.toml
+COPY ./test_project/poetry.lock /usr/src/tripkro//poetry.lock
+COPY ./test_project/pyproject.toml /usr/src/tripkro//pyproject.toml
 
 RUN ln -s ~/.local/bin/poetry /usr/bin/poetry
 RUN poetry install
 
-COPY . /usr/src/test_project/
+COPY . /usr/src/tripkro/
 
 EXPOSE 80
