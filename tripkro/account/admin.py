@@ -19,7 +19,11 @@ class UserAdmin(BaseUserAdmin):
                 )
             },
         ),
-        (("Personal info"), {"fields": ("username", "first_name", "last_name")}),
+        (
+            ("Personal info"),
+            {"fields": ("username", "first_name", "last_name", "full_name", "phone")},
+        ),
+        (("term_conditions"), {"fields": ("term_condition", "is_email_verified")}),
         (
             ("Permissions"),
             {
@@ -55,7 +59,10 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "first_name",
         "last_name",
-        "is_staff",
+        "is_active",
+        "is_email_verified",
+        "term_condition",
     ]
+    list_display_links = ["id", "email"]
     search_fields = ("email", "first_name", "last_name")
     ordering = ("email",)

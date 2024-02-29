@@ -1,4 +1,5 @@
-from typing import Any, Dict
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
@@ -11,7 +12,9 @@ User = get_user_model()
 
 class UserRegisterSerializer(serializers.ModelSerializer):
 
-    password2 = serializers.CharField(style={"input_type": "password"}, write_only=True)
+    c_password = serializers.CharField(
+        style={"input_type": "password"}, write_only=True
+    )
 
     class Meta:
         model = User
@@ -20,18 +23,28 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "phone",
+            "term_condition",
             "password",
-            "password2",
+            "c_password",
         )
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, data):
         password = data.get("password")
-        password2 = data.pop("password2")
+        password2 = data.pop("c_password")
+        term_condition = data.get("term_condition", False)
 
         if password != password2:
             raise serializers.ValidationError(
-                "password and confirm password does not match"
+                {"password": "password and confirm password does not match"}
+            )
+
+        if not term_condition:
+            raise serializers.ValidationError(
+                {
+                    "term_condition": "You must check the term condition to create the account"
+                }
             )
         return super().validate(data)
 
@@ -42,7 +55,16 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ("password",)
+        fields = (
+            "first_name",
+            "last_name",
+            "full_name",
+            "username",
+            "email",
+            "phone",
+            "term_condition",
+            "is_email_verified",
+        )
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -54,8 +76,37 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         user_data = UserSerializer(user).data
 
         data = {
-            "user_data": user_data,
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "status": 200,
+            "data": {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "user": user_data,
+            },
         }
         return data
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+
+    token = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+    c_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        password = data.get("password")
+        c_password = data.pop("c_password")
+
+        if not password or not c_password:
+            raise serializers.ValidationError({"password": "Both fields are required"})
+
+        if password != c_password:
+            raise serializers.ValidationError(
+                {"password": "Password and confirm password must be same"}
+            )
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            raise serializers.ValidationError({"password": [e for e in e]})
+
+        return super().validate(data)
