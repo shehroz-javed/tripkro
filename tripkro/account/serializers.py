@@ -66,23 +66,29 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, data):
+class UserLoginSerializer(serializers.Serializer):
 
-        data = super().validate(data)
-        user = self.user
-        refresh = self.get_token(user)
-        user_data = UserSerializer(user).data
+    email = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
 
-        data = {
-            "status": 200,
-            "data": {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-                "user": user_data,
-            },
-        }
-        return data
+
+# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     def validate(self, data):
+
+#         data = super().validate(data)
+#         user = self.user
+#         refresh = self.get_token(user)
+#         user_data = UserSerializer(user).data
+
+#         data = {
+#             "status": 200,
+#             "data": {
+#                 "refresh": str(refresh),
+#                 "access": str(refresh.access_token),
+#                 "user": user_data,
+#             },
+#         }
+#         return data
 
 
 class ResetPasswordSerializer(serializers.Serializer):

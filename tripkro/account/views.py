@@ -1,13 +1,19 @@
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from account.serializers import UserRegisterSerializer, ResetPasswordSerializer
-from account.utils import send_email_verify_mail
+from account.serializers import (
+    UserRegisterSerializer,
+    ResetPasswordSerializer,
+    UserLoginSerializer,
+    UserSerializer,
+)
+from account.utils import send_email_verify_mail, get_tokens_for_user
 
 from tripkro.utils import CustomErrorSerializer, decode_token, encode_token
 
@@ -20,8 +26,8 @@ class UserRegisterView(APIView):
     def post(self, request):
 
         serializer = UserRegisterSerializer(data=request.data)
-        if serializer.is_valid():
 
+        if serializer.is_valid():
             serializer.validated_data["is_active"] = False
             email = serializer.validated_data.get("email")
             send_email_verify_mail(email)
@@ -34,14 +40,77 @@ class UserRegisterView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-        else:
+
+        return Response(
+            {
+                "status": 400,
+                "error": error.to_representation(serializer.errors),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class UserLoginView(APIView):
+    def post(self, request):
+
+        serializer = UserLoginSerializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data.get("email")
+            password = serializer.validated_data.get("password")
+
+            user = User.objects.filter(email=email).first()
+            if not user:
+                return Response(
+                    {"status": 404, "error": ["User with this email does not exist"]},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            if not check_password(password, user.password):
+                return Response(
+                    {"status": 404, "error": ["Incorrect password"]},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            if not user.is_email_verified:
+                return Response(
+                    {
+                        "status": 401,
+                        "error": ["Kindly verify your email first to procced"],
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            if not user.is_active:
+                return Response(
+                    {
+                        "status": 400,
+                        "error": [
+                            "Your account in deactivated .Contact us if you want to activate your account"
+                        ],
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            user_data = UserSerializer(user).data
+            token = get_tokens_for_user(user)
             return Response(
                 {
-                    "status": 400,
-                    "error": error.to_representation(serializer.errors),
+                    "status": 200,
+                    "message": "Login successfully",
+                    "data": {
+                        "access": token["access"],
+                        "refresh": token["refresh"],
+                        "user": user_data,
+                    },
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_200_OK,
             )
+
+        return Response(
+            {"status": 400, "error": error.to_representation(serializer.errors)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class VerifyUserEmailView(APIView):
@@ -72,6 +141,7 @@ class ForgetPasswordView(APIView):
     def get(self, request):
 
         email = request.query_params.get("email")
+
         if not email:
             return Response(
                 {"status": 400, "error": "Kindly provide and email"},
@@ -98,8 +168,8 @@ class ForgetPasswordView(APIView):
 
         except User.DoesNotExist as e:
             return Response(
-                {"status": 400, "error": e.args},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"status": 404, "error": e.args},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         except Exception as e:
@@ -123,7 +193,6 @@ class ForgetPasswordView(APIView):
             password = serializer.validated_data.get("password")
             user.set_password(password)
             user.save()
-
             return Response(
                 {"status": 200, "message": "password updated successfully"},
                 status=status.HTTP_200_OK,
