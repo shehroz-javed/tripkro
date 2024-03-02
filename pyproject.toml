@@ -13,6 +13,8 @@ pillow = "^10.2.0"
 djangorestframework-simplejwt = "^5.3.1"
 psycopg = "^3.1.18"
 pre-commit = "^3.6.2"
+drf-standardized-errors = "^0.13.0"
+django-debug-toolbar = "^4.3.0"
 
 
 [build-system]

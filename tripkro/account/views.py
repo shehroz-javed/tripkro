@@ -9,10 +9,11 @@ from rest_framework.response import Response
 from account.serializers import UserRegisterSerializer, ResetPasswordSerializer
 from account.utils import send_email_verify_mail
 
-from tripkro.utils import decode_token, encode_token
+from tripkro.utils import CustomErrorSerializer, decode_token, encode_token
 
 
 User = get_user_model()
+error = CustomErrorSerializer()
 
 
 class UserRegisterView(APIView):
@@ -33,15 +34,14 @@ class UserRegisterView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
-
-        return Response(
-            {
-                "status": 400,
-                "message": "Error in creating account",
-                "error": serializer.errors,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        else:
+            return Response(
+                {
+                    "status": 400,
+                    "error": error.to_representation(serializer.errors),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class VerifyUserEmailView(APIView):
@@ -65,7 +65,7 @@ class VerifyUserEmailView(APIView):
             return HttpResponse("User not found")
 
         except Exception as e:
-            return HttpResponse([e for e in e])
+            return HttpResponse(f"Error : {e.args}")
 
 
 class ForgetPasswordView(APIView):
@@ -74,7 +74,7 @@ class ForgetPasswordView(APIView):
         email = request.query_params.get("email")
         if not email:
             return Response(
-                {"status": 400, "message": "Kindly provide and email"},
+                {"status": 400, "error": "Kindly provide and email"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -96,9 +96,9 @@ class ForgetPasswordView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        except User.DoesNotExist:
+        except User.DoesNotExist as e:
             return Response(
-                {"status": 400, "message": "User with this email does not exist"},
+                {"status": 400, "error": e.args},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -106,8 +106,7 @@ class ForgetPasswordView(APIView):
             return Response(
                 {
                     "status": 500,
-                    "message": "Internal server error",
-                    "error": [e for e in e],
+                    "error": e.args,
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
@@ -133,8 +132,7 @@ class ForgetPasswordView(APIView):
         return Response(
             {
                 "status": 400,
-                "message": "error in updating password",
-                "error": serializer.errors,
+                "error": error.to_representation(serializer.errors),
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
