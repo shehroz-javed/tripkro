@@ -6,9 +6,6 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
-from rest_framework import serializers
-from rest_framework.views import exception_handler
-
 
 # to send the email
 def send_html_email(email_to=None, subject="", template="", context={}):
@@ -37,20 +34,3 @@ def decode_token(token):
         return jwt.decode(token, secret_key, algorithms=["HS256"])
     except Exception as e:
         raise InvalidTokenError(f"Invalid token : {e}")
-
-
-def custom_exception_handler(exc, context):
-    response = exception_handler(exc, context)
-
-    if response is not None:
-        if isinstance(exc, serializers.ValidationError):
-            errors = response.data
-            field_errors = {}
-
-            for field, error_detail in errors.items():
-                field_name = field.split("_")[0] if "_" in field else field
-                field_errors[field_name] = error_detail
-
-            response.data = {"errors": field_errors}
-
-    return response

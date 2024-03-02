@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-i7)03^79_0gmxqwg4-fbasl(x6e9nxp1zzg0-%c7a667x$=uue
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -153,7 +153,6 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
     ],
-    "EXCEPTION_HANDLER": "tripkro.utils.custom_exception_handler",
 }
 
 
