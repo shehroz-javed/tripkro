@@ -15,6 +15,8 @@ psycopg = "^3.1.18"
 pre-commit = "^3.6.2"
 drf-standardized-errors = "^0.13.0"
 django-debug-toolbar = "^4.3.0"
+python-dotenv = "^1.0.1"
+django-cors-headers = "^4.3.1"
 
 
 [build-system]

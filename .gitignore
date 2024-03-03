@@ -333,3 +333,4 @@ myapp_models.png
 
 .idea/
 .vscode/
+.env
