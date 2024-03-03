@@ -31,6 +31,7 @@ INSTALLED_APPS += [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "drf_standardized_errors",
+    "django_q",
 ]
 
 # Project apps
@@ -134,13 +135,13 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
 }
 
-# django standardized errors
+# django standardized errors configuration
 DRF_STANDARDIZED_ERRORS = {
     "ENABLE_IN_DEBUG_FOR_UNHANDLED_EXCEPTIONS": True,
     "EXCEPTION_FORMATTER_CLASS": "tripkro.utils.CustomExceptionFormatter",
 }
 
-# django cors headers
+# django cors headers configuration
 CORS_ALLOWED_ORIGINS = []
 CORS_ALLOW_METHODS = (
     "DELETE",
@@ -151,7 +152,7 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
-# django simplejwt settings
+# django simplejwt configuration
 from datetime import timedelta
 
 SIMPLE_JWT = {
@@ -168,4 +169,16 @@ AUTH_USER_MODEL = "account.User"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST_USER = "shehroz@tripkro.com"
 
+# front-end url
 FRONT_END_URL = os.environ.get("FRONT_END_URL")
+
+# django_q configuration
+Q_CLUSTER = {
+    "name": "DjangORM",
+    "workers": 4,
+    "timeout": 90,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+}
