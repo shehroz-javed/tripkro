@@ -33,7 +33,7 @@ def get_tokens_for_user(user):
 
 
 client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-verify = client.verify.services(settings.TWILIO_VERIFY_SERVICE_SID)
+verify = client.verify.v2.services(settings.TWILIO_VERIFY_SERVICE_SID)
 
 
 def twilio_send_otp(phone):
@@ -46,6 +46,6 @@ def twilio_send_otp(phone):
 def check(phone, code):
     try:
         result = verify.verification_checks.create(to=phone, code=code)
-        return result.status == "approved"
+        return result.status
     except TwilioRestException as e:
         return e.args
