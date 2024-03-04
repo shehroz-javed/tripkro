@@ -18,5 +18,5 @@ INTERNAL_IPS = [
 ]
 
 # Email configuration
-EMAIL_HOST = "mailhog"
+EMAIL_HOST = "localhost"
 EMAIL_PORT = 1025

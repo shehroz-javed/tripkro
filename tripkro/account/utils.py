@@ -1,5 +1,10 @@
+import os
+
 from django.conf import settings
 from django.utils import timezone
+
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -25,3 +30,22 @@ def get_tokens_for_user(user):
         "refresh": str(refresh),
         "access": str(refresh.access_token),
     }
+
+
+client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+verify = client.verify.services(settings.TWILIO_VERIFY_SERVICE_SID)
+
+
+def twilio_send_otp(phone):
+    try:
+        verify.verifications.create(to=phone, channel="sms")
+    except Exception as e:
+        return e.args
+
+
+def check(phone, code):
+    try:
+        result = verify.verification_checks.create(to=phone, code=code)
+        return result.status == "approved"
+    except TwilioRestException as e:
+        return e.args

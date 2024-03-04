@@ -13,7 +13,7 @@ from account.serializers import (
     UserLoginSerializer,
     UserSerializer,
 )
-from account.utils import send_email_verify_mail, get_tokens_for_user
+from account.utils import send_email_verify_mail, get_tokens_for_user, twilio_send_otp
 
 from tripkro.utils import CustomErrorSerializer, decode_token, encode_token
 
@@ -30,13 +30,15 @@ class UserRegisterView(APIView):
         if serializer.is_valid():
             serializer.validated_data["is_active"] = False
             email = serializer.validated_data.get("email")
+            phone = serializer.validated_data.get("phone")
             send_email_verify_mail(email)
+            # twilio_send_otp(phone)
             serializer.save()
 
             return Response(
                 {
                     "status": 201,
-                    "message": "Your account has been registered successfully. Please verify your email to activate your account.",
+                    "message": "Your account has been registered successfully. Please verify your email and phone to activate your account.",
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -86,7 +88,7 @@ class UserLoginView(APIView):
                     {
                         "status": 400,
                         "error": [
-                            "Your account in deactivated .Contact us if you want to activate your account"
+                            "Your account is deactivated .Contact us if you want to activate your account"
                         ],
                     },
                     status=status.HTTP_403_FORBIDDEN,
@@ -144,7 +146,7 @@ class ForgetPasswordView(APIView):
 
         if not email:
             return Response(
-                {"status": 400, "error": "Kindly provide and email"},
+                {"status": 400, "error": ["Kindly provide and email"]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

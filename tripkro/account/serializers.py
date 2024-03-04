@@ -112,6 +112,6 @@ class ResetPasswordSerializer(serializers.Serializer):
         try:
             validate_password(password)
         except ValidationError as e:
-            raise serializers.ValidationError({"password": [e for e in e]})
+            raise serializers.ValidationError(e.args)
 
         return super().validate(data)
